@@ -1,0 +1,31 @@
+@import "bootstrap";
+
+@font-face {
+    font-family: 'Hoefler';
+    src: url(../fonts/Hoefler.ttf);
+  }
+
+
+body{
+    //background-image: url(../../images/1);
+    background-color: rgb(224,224,224);
+    background-size: cover;
+    background-position: center;
+
+}
+
+
+.ipc{
+    max-width: 400px;
+}
+
+.card-principal{
+    max-width: 16rem;
+}
+
+
+
+.titre-principal{
+    font-family: Hoefler;
+}
+
