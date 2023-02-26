@@ -1,0 +1,43 @@
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+
+use tp1_wiki;
+
+
+DROP TABLE IF EXISTS `terme`;
+CREATE TABLE IF NOT EXISTS `terme` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `titre` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE (`titre`)
+);
+
+
+DROP TABLE IF EXISTS `version`;
+CREATE TABLE IF NOT EXISTS `version` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `contenu` varchar(2000) NOT NULL,
+  `auteur` varchar(50) not null,
+  `date_publication` datetime not null,
+  `fk_terme` int NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
+
+ALTER TABLE `version` ADD FULLTEXT KEY `contenu` (`contenu`);
+
+ALTER TABLE `version`
+  ADD CONSTRAINT `version_terme` FOREIGN KEY (`fk_terme`) REFERENCES `terme` (`id`);
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
