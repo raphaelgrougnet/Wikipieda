@@ -1,0 +1,36 @@
+{% extends 'base.jinja2' %}
+{% block contenu %}
+    <div class="p-3  m-3 ">
+        <h1 class="text-center mb-5">Ajouter un terme à Wikipieda</h1>
+        <hr>
+        <div class="d-flex flex-column align-items-center">
+            <form action="/ajouter" method="post" novalidate class="w-50 ">
+                <div class="mb-3">
+                    <label for="titreTerme" class="form-label">Titre</label>
+                    <input type="text" class="form-control {{ validationTitre }}" id="titreTerme" name="titreTerme" placeholder="Entrez le titre du terme" value="{{ valTitre }}">
+                    <div class="invalid-feedback">Le titre du terme doit contenir entre 1 et 50 caractères alphabétiques.</div>
+                </div>
+                <div class="mb-3">
+                    <label for="contenuTerme" class="form-label">Contenu</label>
+                    <textarea class="form-control {{ validationContenu }}" id="contenuTerme" name="contenuTerme" style="height: 190px">{{ valContenu }}</textarea>
+                    <div class="invalid-feedback">Le contenu du terme doit contenir entre 5 et 2000 caractères.</div>
+                </div>
+                <div class="mb-3">
+                    <label for="auteurTerme" class="form-label">Auteur</label>
+                    <input type="text" list="dataAuteur" class="form-control {{ validationAuteur }}" id="auteurTerme" name="auteurTerme" placeholder="Entrez l'auteur du terme" value="{{ valAuteur }}">
+                    <div class="invalid-feedback">L'auteur du terme doit contenir entre 3 et 50 caractères alphanumériques, incluant le tiret et l’espace.</div>
+                    <datalist id="dataAuteur">
+                        <option value="{{ auteurCookie }}"></option>
+                    </datalist>
+                </div>
+                <div class="d-flex justify-content-between pt-2">
+                    <button type="reset" class="btn btn-danger w-50 fw-medium me-2">Vider <i class="bi bi-trash3"></i></button>
+                    <button type="submit" class="btn btn-primary w-50 fw-medium ms-2">Suivant <i class="bi bi-caret-right-fill"></i></button>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+
+{% endblock %}

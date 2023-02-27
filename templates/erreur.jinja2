@@ -1,0 +1,10 @@
+{% extends "base.jinja2" %}
+{% block contenu %}
+    <h1 class="pt-4 text-center">Erreur {{ code_erreur }}</h1>
+    <div class="d-flex justify-content-center">
+        <img src="static/images/error.gif" alt="erreur">
+    </div>
+    <p class="text-center fs-3 m-0">Nous sommes désolé, mais il semblerait qu'il y ait eu une erreur </p>
+    <p class="text-center fs-4">Nous vous invitons à revenir à la page d'accueil</p>
+    <p class="text-center"><a class="btn btn-primary" href="/">Retour à l'accueil</a></p>
+{% endblock %}

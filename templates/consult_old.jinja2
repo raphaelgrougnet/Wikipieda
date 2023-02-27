@@ -1,0 +1,21 @@
+{% extends 'base.jinja2' %}
+{% block contenu %}
+    <h1 class="pt-4 mb-3 text-center">Ancienne version du terme : {{ version.titre.upper() }}</h1>
+    <div class="d-flex flex-column align-items-center">
+        <div class="w-50 d-flex justify-content-center">
+            <img src="{{ src }}" class="shadow mb-2 rounded-2 w-100" alt="placeholder">
+        </div>
+        <div class="card mb-3 shadow" style="max-width: 50rem">
+            <div class="g-0">
+                <div class="card-body ">
+                    <p class="card-text">{{ version.contenu }}</p>
+                    <div class="d-flex justify-content-between gap-3">
+                        <p class="card-text m-0 pt-2"><span class="text-muted">{{ version.auteur }}</span> | <small class="text-muted">{{ version.date_publication }}</small></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

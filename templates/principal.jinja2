@@ -1,0 +1,37 @@
+{% extends 'base.jinja2' %}
+{% block contenu %}
+
+    <div class="px-5 mb-4">
+      <h1 class="text-center py-5 titre-principal">
+        Bienvenu sur W<span class="text-uppercase fs-2">ikipied</span>A
+      </h1>
+      <form action="/recherche" method="get" class="d-flex container pb-5 ">
+        <input class="form-control me-2" type="text" name="mot" placeholder="Rechercher sur Wikipieda" value="{{ mot }}">
+        <button class="btn btn-primary " type="submit"><i class="bi bi-search"></i></button>
+      </form>
+    </div>
+
+    <hr class="pb-3">
+    <h2 class="text-center mb-5">
+      Tous les termes
+    </h2>
+    <div class="d-flex flex-wrap justify-content-center">
+    {% for terme in listeTerme %}
+
+            <div class="card card-principal p-0 m-2 shadow border-0">
+                <img src="{{ terme.src }}" class="card-img-top img-fluid" alt="{{ terme.titre }}-image">
+                <div class="card-body">
+                    <h5 class="card-title text-center">{{ terme.titre.upper() }}</h5>
+
+                    <a href="/details?id={{ terme.id }}" class="btn btn-primary w-100">Aller à la définition</a>
+                </div>
+            </div>
+
+    {% endfor %}
+    </div>
+
+
+
+
+
+{% endblock %}
