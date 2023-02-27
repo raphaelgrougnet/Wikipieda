@@ -6,14 +6,18 @@
   }
 
 
-body{
+body {
     //background-image: url(../../images/1);
-    background-color: rgb(224,224,224);
+    background-color: rgb(224, 224, 224);
     background-size: cover;
     background-position: center;
 
 }
-
+.image-card-details{
+    max-height: 144px;
+    max-width: 256px;
+    object-fit: scale-down;
+}
 
 .ipc{
     max-width: 400px;

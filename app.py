@@ -32,7 +32,6 @@ dictRegions = {
     "en_US": "Anglais (USA)"
 }
 
-
 def lire_cookies():
     """Lit les cookies et retourne un message"""
     return request.cookies.get('auteur')
@@ -48,6 +47,8 @@ def obtenirRegionActuelle():
 
 @app.route("/")
 def index():
+
+
     with bd.creer_connexion() as connexion:
         with connexion.get_curseur() as curseur:
             # ATTENTION : s'il y a un million de résultats, vous aurez un million de jeux vidéo en mémoire !!
@@ -58,7 +59,7 @@ def index():
                 if os.path.isfile(os.path.join(app.config['CHEMIN_VERS_AJOUTS'], str(t["id"]))):
                     t["src"] = app.config['ROUTE_VERS_AJOUTS'] + "/" + str(t["id"])
                 else:
-                    t["src"] = "/static/images/placeholder.jpg"
+                    t["src"] = "https://picsum.photos/1920/1080"
 
     return render_template("principal.jinja2", listeTerme=listeTerme, regionActuelle=obtenirRegionString())
 
@@ -134,6 +135,7 @@ def add():
 @app.route("/details")
 def details():
     id = request.args.get("id", default="", type=str)
+
     if not id:
         abort(400)
     with bd.creer_connexion() as connexion:
@@ -146,11 +148,16 @@ def details():
     if os.path.isfile(os.path.join(app.config['CHEMIN_VERS_AJOUTS'], str(id))):
         src = app.config['ROUTE_VERS_AJOUTS'] + "/" + str(id)
     else:
-        src = "/static/images/placeholder.jpg"
+        src = "https://picsum.photos/1920/1080"
     date = details["date"]
     datef = dates.format_date(date, locale=obtenirRegionActuelle())
+
+    classe = ""
+    if id in request.cookies.get("fav"):
+        classe = "-fill"
+
     return render_template("details.jinja2", details=details, id=id, src=src, regionActuelle=obtenirRegionString(),
-                           date=datef)
+                           date=datef, classe=classe)
 
 
 @app.route("/edit", methods=["POST"])
@@ -159,9 +166,7 @@ def edit():
     contenu = request.form.get("contenuTerme", default="", type=str)
     auteur = request.form.get("auteurTerme", default="", type=str)
     image = request.files["imageTerme"]
-    if not image:
-        src = "/static/images/placeholder.jpg"
-    else:
+    if image:
         nom_image = str(idT)
         chemin_complet = os.path.join(app.config['CHEMIN_VERS_AJOUTS'], nom_image)
         image.save(chemin_complet)
@@ -173,9 +178,11 @@ def edit():
 
     return redirect("/details?id=" + str(idT), 303)
 
+titreVar = ""
 
 @app.route("/modifier", methods=["POST"])
 def modifier():
+    global titreVar
     validationTitre = ""
     validationContenu = ""
     validationAuteur = ""
@@ -184,12 +191,20 @@ def modifier():
     contenu = request.form.get("contenuTerme", default="", type=str)
     idT = request.form.get("idTerme", default="", type=int)
     auteur = request.form.get("auteurTerme", default="", type=str)
-    titreVar = titre
+
+
+
+    if not titre:
+        titre = titreVar
+    else:
+        titreVar = titre
+
     validationTitre = "is-valid"
     if len(contenu) < 5 or len(contenu) > 2000 or regexEscape.search(contenu):
         validationContenu = "is-invalid"
     else:
         validationContenu = "is-valid"
+
     if not regexAuteur.fullmatch(auteur):
         validationAuteur = "is-invalid"
     else:
@@ -197,7 +212,7 @@ def modifier():
 
     if validationTitre != "is-valid" or validationContenu != "is-valid" or validationAuteur != "is-valid":
         return render_template("modifier.jinja2",
-                               validationTitre=validationTitre,
+                               validationTitre="",
                                validationContenu=validationContenu,
                                validationAuteur=validationAuteur,
                                valTitre=titreVar,
@@ -206,8 +221,12 @@ def modifier():
                                valId=idT,
                                regionActuelle=obtenirRegionString())
 
+    if os.path.isfile(os.path.join(app.config['CHEMIN_VERS_AJOUTS'], str(idT))):
+        src = app.config['ROUTE_VERS_AJOUTS'] + "/" + str(idT)
+    else:
+        src = "/static/images/placeholder.jpg"
     return render_template("modifier-image.jinja2", valTitre=titreVar, valContenu=contenu, valAuteur=auteur, valId=idT,
-                           regionActuelle=obtenirRegionString())
+                           regionActuelle=obtenirRegionString(), src=src)
 
 
 @app.route("/fr_CA")
@@ -233,6 +252,7 @@ def en_US():
 
 @app.route("/old")
 def old():
+
     id = request.args.get("idTerme", default="", type=str)
     if not id:
         abort(400)
@@ -252,6 +272,7 @@ def old():
 
 @app.route("/consulter_ancienne")
 def consulter_ancienne():
+
     vId = request.args.get("idVersion", default="", type=int)
     if not vId:
         abort(400)
@@ -270,12 +291,13 @@ def consulter_ancienne():
             if os.path.isfile(os.path.join(app.config['CHEMIN_VERS_AJOUTS'], str(version['id']))):
                 src = app.config['ROUTE_VERS_AJOUTS'] + "/" + str(version['id'])
             else:
-                src = "/static/images/placeholder.jpg"
+                src = "https://picsum.photos/1920/1080"
     return render_template("consult_old.jinja2", version=version, src=src, regionActuelle=obtenirRegionString())
 
 
 @app.route("/recherche")
 def recherche():
+
     mot = request.args.get("mot", type=str).strip()
     if not mot:
         return redirect("/", 303)
@@ -290,20 +312,24 @@ def recherche():
         if os.path.isfile(os.path.join(app.config['CHEMIN_VERS_AJOUTS'], str(t["id"]))):
             t["src"] = app.config['ROUTE_VERS_AJOUTS'] + "/" + str(t["id"])
         else:
-            t["src"] = "/static/images/placeholder.jpg"
+            t["src"] = "https://picsum.photos/1920/1080"
     return render_template("principal.jinja2", listeTerme=listeTerme, mot=mot, regionActuelle=obtenirRegionString())
 
 
+
+
+
+
 @app.errorhandler(400)
-def page_erreur_400():
-    return render_template("erreur.jinja2", code_erreur=400, regionActuelle=obtenirRegionString())
+def page_erreur_400(error):
+    return render_template("erreur.jinja2", code_erreur=400, erreur=error, regionActuelle=obtenirRegionString())
 
 
 @app.errorhandler(404)
-def page_erreur_404():
-    return render_template("erreur.jinja2", code_erreur=404, regionActuelle=obtenirRegionString())
+def page_erreur_404(error):
+    return render_template("erreur.jinja2", code_erreur=404, erreur=error, regionActuelle=obtenirRegionString())
 
 
 @app.errorhandler(500)
-def page_erreur_500():
-    return render_template("erreur.jinja2", code_erreur=500, regionActuelle=obtenirRegionString())
+def page_erreur_500(error):
+    return render_template("erreur.jinja2", code_erreur=500, erreur=error, regionActuelle=obtenirRegionString())

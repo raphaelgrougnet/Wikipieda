@@ -1,7 +1,7 @@
 {% extends 'base.jinja2' %}
 {% block contenu %}
     <div class="p-3  m-3">
-        <h1 class="text-center">Modifier l'image du terme</h1>
+        <h1 class="text-center">Modifier l'image du terme <span class="text-muted fst-italic">(falcultatif)</span></h1>
             <hr>
             <form action="/edit" method="post" enctype="multipart/form-data" novalidate>
                 <input type="hidden" class="form-control" id="titreTerme" name="titreTerme" placeholder="Entrez le titre du terme" value="{{ valTitre }}">
@@ -9,8 +9,8 @@
                 <input type="hidden" class="form-control" id="auteurTerme" name="auteurTerme" placeholder="Entrez l'auteur du terme" value="{{ valAuteur }}">
                 <input type="hidden" name="idTerme" value="{{ valId }}">
                 <div class="image-preview-container d-flex align-items-center flex-column mb-3">
-                    <div class="preview p-3 w-50">
-                        <img id="preview-selected-image" src="static/images/placeholder.jpg" class="rounded-3 w-100" />
+                    <div class="preview p-3 w-25">
+                        <img id="preview-selected-image" src="{{ src }}" class="rounded-3 w-100" />
                     </div>
 
                     <input type="file" id="file-upload" name="imageTerme" class="form-control w-50" accept="image/*" onchange="previewImage(event);" />
@@ -19,7 +19,7 @@
 
                 <div class="d-flex justify-content-between">
                     <button type="reset" class="btn btn-danger w-50 fw-medium me-2" onclick="resetImage(event)">Vider <i class="bi bi-trash3"></i></button>
-                    <button type="submit" class="btn btn-primary w-50 fw-medium ms-2">Ajouter le terme <i class="bi bi-check"></i></button>
+                    <button type="submit" class="btn btn-primary w-50 fw-medium ms-2">Modifier le terme <i class="bi bi-check"></i></button>
                 </div>
 
         </form>

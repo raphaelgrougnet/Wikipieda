@@ -1,7 +1,7 @@
 {% extends 'base.jinja2' %}
 {% block contenu %}
     <div class="p-3  m-3">
-        <h1 class="text-center">Ajouter une image au terme</h1>
+        <h1 class="text-center">Ajouter une image au terme <span class="text-muted fst-italic">(falcultatif)</span></h1>
             <hr>
             <form action="/add" method="post" enctype="multipart/form-data" novalidate>
                 <input type="hidden" class="form-control" id="titreTerme" name="titreTerme" placeholder="Entrez le titre du terme" value="{{ valTitre }}">
@@ -10,7 +10,7 @@
 
                 <div class="image-preview-container d-flex align-items-center flex-column mb-3">
                     <div class="preview p-3 w-50">
-                        <img id="preview-selected-image" src="static/images/placeholder.jpg" class="rounded-3 w-100" />
+                        <img id="preview-selected-image" src="static/images/placeholder.jpg" class="rounded-3 img-fluid w-100" />
                     </div>
 
                     <input type="file" id="file-upload" name="imageTerme" class="form-control w-50" accept="image/*" onchange="previewImage(event);" />
