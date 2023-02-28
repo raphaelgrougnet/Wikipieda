@@ -15,9 +15,12 @@ body {
 }
 .image-card-details{
     max-height: 144px;
+    min-height: 144px;
     max-width: 256px;
+    min-width: 256px;
     object-fit: scale-down;
 }
+
 
 .ipc{
     max-width: 400px;

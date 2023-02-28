@@ -9,10 +9,13 @@
             <div class="g-0">
                 <div class="card-body ">
                     <p class="card-text">{{ version.contenu }}</p>
-                    <div class="d-flex justify-content-between gap-3">
-                        <p class="card-text m-0 pt-2"><span class="text-muted">{{ version.auteur }}</span> | <small class="text-muted">{{ version.date_publication }}</small></p>
+                    <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-between gap-3">
+                            <p class="card-text m-0 pt-2"><span class="text-muted">{{ version.auteur }}</span> | <small class="text-muted">{{ version.date_publication }}</small></p>
                         </div>
+                        <a class="btn btn-primary" href="/old?idTerme={{ idTerme }}"><i class="bi bi-box-arrow-left"></i> Revenir aux anciennes versions</a>
                     </div>
+
                 </div>
             </div>
         </div>

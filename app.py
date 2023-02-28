@@ -3,14 +3,14 @@ import os
 from flask import Flask, render_template, request, abort, redirect, make_response
 import re
 import bd
-from datetime import date, datetime
-from babel import numbers, dates
+from datetime import datetime
+from babel import dates
 from flask_babel import Babel
 
 app = Flask(__name__)
 
 # Liste des sous-répertoires vers "ajouts"
-app.config['MORCEAUX_VERS_AJOUTS'] = ["static", "images", "ajouts"]
+app.config['MORCEAUX_VERS_AJOUTS'] = ["static", "images", "termes"]
 
 # Pour donner static/images/ajouts". Assurez-vous que ce dossier existe !
 app.config['ROUTE_VERS_AJOUTS'] = "/".join(app.config['MORCEAUX_VERS_AJOUTS'])
@@ -32,6 +32,7 @@ dictRegions = {
     "en_US": "Anglais (USA)"
 }
 
+
 def lire_cookies():
     """Lit les cookies et retourne un message"""
     return request.cookies.get('auteur')
@@ -47,8 +48,6 @@ def obtenirRegionActuelle():
 
 @app.route("/")
 def index():
-
-
     with bd.creer_connexion() as connexion:
         with connexion.get_curseur() as curseur:
             # ATTENTION : s'il y a un million de résultats, vous aurez un million de jeux vidéo en mémoire !!
@@ -59,16 +58,16 @@ def index():
                 if os.path.isfile(os.path.join(app.config['CHEMIN_VERS_AJOUTS'], str(t["id"]))):
                     t["src"] = app.config['ROUTE_VERS_AJOUTS'] + "/" + str(t["id"])
                 else:
-                    t["src"] = "https://picsum.photos/1920/1080"
+                    t["src"] = "/static/images/placeholder.jpg"
 
     return render_template("principal.jinja2", listeTerme=listeTerme, regionActuelle=obtenirRegionString())
 
 
 @app.route("/ajouter", methods=["GET", "POST"])
 def ajouter():
-    titre = request.form.get("titreTerme", default="", type=str)
-    contenu = request.form.get("contenuTerme", default="", type=str)
-    auteur = request.form.get("auteurTerme", default="", type=str)
+    titre = request.form.get("titreTerme", default="", type=str).strip()
+    contenu = request.form.get("contenuTerme", default="", type=str).strip()
+    auteur = request.form.get("auteurTerme", default="", type=str).strip()
 
     if request.method == "POST":
 
@@ -118,12 +117,13 @@ def add():
             lastid = curseur.lastrowid
 
             curseur.execute(
-                'INSERT INTO version (contenu,auteur,date_publication,fk_terme) VALUES (%(contenu)s,%(auteur)s,%(date_publication)s,%(fk_terme)s)',
+                """
+                INSERT INTO version (contenu,auteur,date_publication,fk_terme) 
+                VALUES (%(contenu)s,%(auteur)s,%(date_publication)s,%(fk_terme)s)
+                """,
                 {'contenu': contenu, 'auteur': auteur, 'date_publication': datetime.now(), 'fk_terme': lastid})
 
-    if not image:
-        src = "/static/images/placeholder.jpg"
-    else:
+    if image:
         nom_image = str(lastid)
 
         chemin_complet = os.path.join(app.config['CHEMIN_VERS_AJOUTS'], nom_image)
@@ -141,23 +141,25 @@ def details():
     with bd.creer_connexion() as connexion:
         with connexion.get_curseur() as curseur:
             curseur.execute(
-                'SELECT t.id,t.titre,v.contenu,v.auteur,v.date_publication as date FROM version as v inner join terme as t on t.id = v.fk_terme WHERE t.id=%(id)s order by date desc limit 1',
+                """
+                SELECT t.id,t.titre,v.contenu,v.auteur,v.date_publication AS date
+                FROM version as v inner join terme as t on t.id = v.fk_terme
+                WHERE t.id=%(id)s order by date desc limit 1
+                """,
                 {'id': id})
             details = curseur.fetchone()
 
+    if not details:
+        abort(404)
     if os.path.isfile(os.path.join(app.config['CHEMIN_VERS_AJOUTS'], str(id))):
         src = app.config['ROUTE_VERS_AJOUTS'] + "/" + str(id)
     else:
-        src = "https://picsum.photos/1920/1080"
+        src = "/static/images/placeholder.jpg"
     date = details["date"]
     datef = dates.format_date(date, locale=obtenirRegionActuelle())
 
-    classe = ""
-    if id in request.cookies.get("fav"):
-        classe = "-fill"
-
     return render_template("details.jinja2", details=details, id=id, src=src, regionActuelle=obtenirRegionString(),
-                           date=datef, classe=classe)
+                           date=datef)
 
 
 @app.route("/edit", methods=["POST"])
@@ -173,12 +175,17 @@ def edit():
     with bd.creer_connexion() as connexion:
         with connexion.get_curseur() as curseur:
             curseur.execute(
-                'INSERT INTO version (contenu,auteur,date_publication,fk_terme) VALUES (%(contenu)s,%(auteur)s,%(date_publication)s,%(fk_terme)s)',
+                """
+                INSERT INTO version (contenu,auteur,date_publication,fk_terme)
+                VALUES (%(contenu)s,%(auteur)s,%(date_publication)s,%(fk_terme)s)
+                """,
                 {'contenu': contenu, 'auteur': auteur, 'date_publication': datetime.now(), 'fk_terme': idT})
 
     return redirect("/details?id=" + str(idT), 303)
 
+
 titreVar = ""
+
 
 @app.route("/modifier", methods=["POST"])
 def modifier():
@@ -187,13 +194,12 @@ def modifier():
     validationContenu = ""
     validationAuteur = ""
 
-    titre = request.form.get("titreTerme", default="", type=str)
-    contenu = request.form.get("contenuTerme", default="", type=str)
+    titre = request.form.get("titreTerme", default="", type=str).strip()
+    contenu = request.form.get("contenuTerme", default="", type=str).strip()
     idT = request.form.get("idTerme", default="", type=int)
-    auteur = request.form.get("auteurTerme", default="", type=str)
-
-
-
+    auteur = request.form.get("auteurTerme", default="", type=str).strip()
+    if not idT:
+        abort(404)
     if not titre:
         titre = titreVar
     else:
@@ -225,8 +231,13 @@ def modifier():
         src = app.config['ROUTE_VERS_AJOUTS'] + "/" + str(idT)
     else:
         src = "/static/images/placeholder.jpg"
-    return render_template("modifier-image.jinja2", valTitre=titreVar, valContenu=contenu, valAuteur=auteur, valId=idT,
-                           regionActuelle=obtenirRegionString(), src=src)
+
+    reponse = make_response(render_template("modifier-image.jinja2",
+                                            valTitre=titreVar, valContenu=contenu, valAuteur=auteur, valId=idT,
+                                            regionActuelle=obtenirRegionString(), src=src))
+    reponse.set_cookie('auteur' , auteur)
+    return reponse
+
 
 
 @app.route("/fr_CA")
@@ -252,14 +263,17 @@ def en_US():
 
 @app.route("/old")
 def old():
-
     id = request.args.get("idTerme", default="", type=str)
     if not id:
         abort(400)
     with bd.creer_connexion() as connexion:
         with connexion.get_curseur() as curseur:
             curseur.execute(
-                'SELECT t.titre,v.auteur,v.id,v.date_publication as date FROM version as v inner join terme as t on t.id = v.fk_terme WHERE t.id=%(id)s order by date desc',
+                """
+                SELECT t.titre,v.auteur,v.id,v.date_publication as date FROM version as v
+                inner join terme as t on t.id = v.fk_terme
+                WHERE t.id=%(id)s order by date desc
+                """,
                 {'id': id})
             versions = curseur.fetchall()
 
@@ -272,14 +286,17 @@ def old():
 
 @app.route("/consulter_ancienne")
 def consulter_ancienne():
-
     vId = request.args.get("idVersion", default="", type=int)
     if not vId:
         abort(400)
     with bd.creer_connexion() as connexion:
         with connexion.get_curseur() as curseur:
             curseur.execute(
-                'SELECT t.id,t.titre, v.contenu, v.auteur, v.date_publication from version as v INNER JOIN terme as t ON v.fk_terme = t.id WHERE v.id = %(id)s',
+                """
+                SELECT t.id,t.titre, v.contenu, v.auteur, v.date_publication FROM version as v
+                INNER JOIN terme as t ON v.fk_terme = t.id
+                WHERE v.id = %(id)s
+                """,
                 {
                     'id': vId
                 }
@@ -291,13 +308,13 @@ def consulter_ancienne():
             if os.path.isfile(os.path.join(app.config['CHEMIN_VERS_AJOUTS'], str(version['id']))):
                 src = app.config['ROUTE_VERS_AJOUTS'] + "/" + str(version['id'])
             else:
-                src = "https://picsum.photos/1920/1080"
-    return render_template("consult_old.jinja2", version=version, src=src, regionActuelle=obtenirRegionString())
+                src = "/static/images/placeholder.jpg"
+    return render_template("consult_old.jinja2", version=version, idTerme=version['id'], src=src,
+                           regionActuelle=obtenirRegionString())
 
 
 @app.route("/recherche")
 def recherche():
-
     mot = request.args.get("mot", type=str).strip()
     if not mot:
         return redirect("/", 303)
@@ -312,12 +329,8 @@ def recherche():
         if os.path.isfile(os.path.join(app.config['CHEMIN_VERS_AJOUTS'], str(t["id"]))):
             t["src"] = app.config['ROUTE_VERS_AJOUTS'] + "/" + str(t["id"])
         else:
-            t["src"] = "https://picsum.photos/1920/1080"
+            t["src"] = "/static/images/placeholder.jpg"
     return render_template("principal.jinja2", listeTerme=listeTerme, mot=mot, regionActuelle=obtenirRegionString())
-
-
-
-
 
 
 @app.errorhandler(400)
